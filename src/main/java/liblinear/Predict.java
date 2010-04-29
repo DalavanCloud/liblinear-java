@@ -6,6 +6,9 @@ import static liblinear.Linear.atoi;
 import static liblinear.Linear.closeQuietly;
 import static liblinear.Linear.printf;
 
+import gnu.trove.TDoubleArrayList;
+import gnu.trove.TIntArrayList;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -20,6 +23,8 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+
+import cc.mallet.types.SparseVector;
 
 
 public class Predict {
@@ -63,10 +68,13 @@ public class Predict {
 
         String line = null;
         while ((line = reader.readLine()) != null) {
-            List<FeatureNode> x = new ArrayList<FeatureNode>();
+            //List<FeatureNode> x = new ArrayList<FeatureNode>();
             StringTokenizer st = new StringTokenizer(line, " \t");
             String label = st.nextToken();
             int target_label = atoi(label);
+            
+            TIntArrayList indexes = new TIntArrayList();
+            TDoubleArrayList values = new TDoubleArrayList();
 
             while (st.hasMoreTokens()) {
                 String[] split = COLON.split(st.nextToken(), 2);
@@ -78,32 +86,36 @@ public class Predict {
 
                     // feature indices larger than those in training are not used
                     if (idx <= nr_feature) {
-                        FeatureNode node = new FeatureNode(idx, val);
-                        x.add(node);
+                        //FeatureNode node = new FeatureNode(idx, val);
+                        //x.add(node);
+                    	indexes.add(idx);
+                    	values.add(val);
                     }
                 } catch (NumberFormatException e) {
                     exit_input_error(total + 1, e);
                 }
             }
+            SparseVector x = new SparseVector(indexes.toNativeArray(), values.toNativeArray());
 
-            if (model.bias >= 0) {
+            /* FIXME: enable bias
+             * if (model.bias >= 0) {
                 FeatureNode node = new FeatureNode(n, model.bias);
-                x.add(node);
-            }
+                //x.add(node);
+            }*/
 
-            FeatureNode[] nodes = new FeatureNode[x.size()];
-            nodes = x.toArray(nodes);
+            //FeatureNode[] nodes = new FeatureNode[x.size()];
+            //nodes = x.toArray(nodes);
 
             int predict_label;
 
             if (flag_predict_probability) {
-                predict_label = Linear.predictProbability(model, nodes, prob_estimates);
+                predict_label = Linear.predictProbability(model, x, prob_estimates);
                 printf(out, "%d", predict_label);
                 for (int j = 0; j < model.nr_class; j++)
                     printf(out, " %g", prob_estimates[j]);
                 printf(out, "\n");
             } else {
-                predict_label = Linear.predict(model, nodes);
+                predict_label = Linear.predict(model, x);
                 printf(out, "%d\n", predict_label);
             }
 

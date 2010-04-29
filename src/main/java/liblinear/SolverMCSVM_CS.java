@@ -3,6 +3,7 @@ package liblinear;
 import static liblinear.Linear.copyOf;
 import static liblinear.Linear.info;
 import static liblinear.Linear.swap;
+import cc.mallet.types.SparseVector;
 
 
 /**
@@ -92,10 +93,10 @@ class SolverMCSVM_CS {
         for (i = 0; i < l; i++) {
             for (m = 0; m < nr_class; m++)
                 alpha_index[i * nr_class + m] = m;
-            QD[i] = 0;
-            for (FeatureNode xi : prob.x[i]) {
+            QD[i] = LinearKernel.snorm(prob.x.get(i));
+            /*for (FeatureNode xi : prob.x[i]) {
                 QD[i] += xi.value * xi.value;
-            }
+            }*/
             active_size_i[i] = nr_class;
             y_index[i] = prob.y[i];
             index[i] = i;
@@ -127,12 +128,13 @@ class SolverMCSVM_CS {
                         G[m] = 1;
                     if (y_index[i] < active_size_i[i]) G[y_index[i]] = 0;
 
-                    for (FeatureNode xi : prob.x[i]) {
+                    SparseVector xi = prob.x.get(i);
+                    for (int j = 0; j != xi.numLocations(); j++) {
                         // double *w_i = &w[(xi.index-1)*nr_class];
-                        int w_offset = (xi.index - 1) * nr_class;
+                        int w_offset = (xi.indexAtLocation(j) - 1) * nr_class;
                         for (m = 0; m < active_size_i[i]; m++)
                             // G[m] += w_i[alpha_index_i[m]]*(xi.value);
-                            G[m] += w[w_offset + alpha_index_i.get(m)] * (xi.value);
+                            G[m] += w[w_offset + alpha_index_i.get(m)] * (xi.valueAtLocation(j));
 
                     }
 
@@ -192,11 +194,12 @@ class SolverMCSVM_CS {
                         }
                     }
 
-                    for (FeatureNode xi : prob.x[i]) {
+                    //SparseVector xi = prob.x.get(i);
+                    for (int j = 0; j != xi.numLocations(); j++) {
                         // double *w_i = &w[(xi->index-1)*nr_class];
-                        int w_offset = (xi.index - 1) * nr_class;
+                        int w_offset = (xi.indexAtLocation(j) - 1) * nr_class;
                         for (m = 0; m < nz_d; m++) {
-                            w[w_offset + d_ind[m]] += d_val[m] * xi.value;
+                            w[w_offset + d_ind[m]] += d_val[m] * xi.valueAtLocation(j);
                         }
                     }
                 }

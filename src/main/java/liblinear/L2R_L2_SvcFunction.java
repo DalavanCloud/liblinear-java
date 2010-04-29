@@ -1,5 +1,7 @@
 package liblinear;
 
+import cc.mallet.types.SparseVector;
+
 class L2R_L2_SvcFunction implements Function {
 
     private final Problem  prob;
@@ -96,9 +98,9 @@ class L2R_L2_SvcFunction implements Function {
             XTv[i] = 0;
 
         for (i = 0; i < sizeI; i++) {
-            for (FeatureNode s : prob.x[I[i]]) {
-                XTv[s.index - 1] += v[i] * s.value;
-            }
+        	SparseVector xi = prob.x.get(I[i]);
+        	for(int j = 0; j != xi.numLocations(); j++)
+        		XTv[xi.indexAtLocation(j) - 1] = v[i] * xi.valueAtLocation(j);
         }
     }
 
@@ -106,9 +108,9 @@ class L2R_L2_SvcFunction implements Function {
 
         for (int i = 0; i < sizeI; i++) {
             Xv[i] = 0;
-            for (FeatureNode s : prob.x[I[i]]) {
-                Xv[i] += v[s.index - 1] * s.value;
-            }
+        	SparseVector xi = prob.x.get(I[i]);
+        	for(int j = 0; j != xi.numLocations(); j++)
+        		Xv[xi.indexAtLocation(j) - 1] = v[i] * xi.valueAtLocation(j);
         }
     }
 
@@ -116,9 +118,10 @@ class L2R_L2_SvcFunction implements Function {
 
         for (int i = 0; i < prob.l; i++) {
             Xv[i] = 0;
-            for (FeatureNode s : prob.x[i]) {
-                Xv[i] += v[s.index - 1] * s.value;
-            }
+        	SparseVector xi = prob.x.get(I[i]);
+        	for(int j = 0; j != xi.numLocations(); j++)
+        		Xv[xi.indexAtLocation(j) - 1] = v[i] * xi.valueAtLocation(j);
+
         }
     }
 

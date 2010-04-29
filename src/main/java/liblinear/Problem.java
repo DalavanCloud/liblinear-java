@@ -2,6 +2,9 @@ package liblinear;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+
+import cc.mallet.types.SparseVector;
 
 
 /**
@@ -44,7 +47,8 @@ public class Problem {
     public int[]           y;
 
     /** array of sparse feature nodes */
-    public FeatureNode[][] x;
+    //public FeatureNode[][] x;
+    public List<SparseVector> x;
 
     /**
      * If bias &gt;= 0, we assume that one additional feature is added

@@ -4,6 +4,9 @@ import static liblinear.Linear.NL;
 import static liblinear.Linear.atof;
 import static liblinear.Linear.atoi;
 
+import gnu.trove.TDoubleArrayList;
+import gnu.trove.TIntArrayList;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -11,6 +14,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import cc.mallet.types.SparseVector;
 
 
 public class Train {
@@ -184,7 +189,8 @@ public class Train {
     public static Problem readProblem(File file, double bias) throws IOException, InvalidInputDataException {
         BufferedReader fp = new BufferedReader(new FileReader(file));
         List<Integer> vy = new ArrayList<Integer>();
-        List<FeatureNode[]> vx = new ArrayList<FeatureNode[]>();
+        //List<FeatureNode[]> vx = new ArrayList<FeatureNode[]>();
+        List<SparseVector> vx = new ArrayList<SparseVector>();
         int max_index = 0;
 
         int lineNr = 0;
@@ -205,13 +211,9 @@ public class Train {
                 }
 
                 int m = st.countTokens() / 2;
-                FeatureNode[] x;
-                if (bias >= 0) {
-                    x = new FeatureNode[m + 1];
-                } else {
-                    x = new FeatureNode[m];
-                }
                 int indexBefore = 0;
+                TIntArrayList indexes = new TIntArrayList();
+                TDoubleArrayList values = new TDoubleArrayList();
                 for (int j = 0; j < m; j++) {
 
                     token = st.nextToken();
@@ -230,16 +232,16 @@ public class Train {
                     token = st.nextToken();
                     try {
                         double value = atof(token);
-                        x[j] = new FeatureNode(index, value);
+                        indexes.add(index);
+                        values.add(value);
+                        max_index = Math.max(max_index, index);
+                        
                     } catch (NumberFormatException e) {
                         throw new InvalidInputDataException("invalid value: " + token, file, lineNr);
                     }
                 }
-                if (m > 0) {
-                    max_index = Math.max(max_index, x[m - 1].index);
-                }
 
-                vx.add(x);
+                vx.add(new SparseVector(indexes.toNativeArray(), values.toNativeArray()));
             }
 
             return constructProblem(vy, vx, max_index, bias);
@@ -253,24 +255,25 @@ public class Train {
         prob = Train.readProblem(new File(filename), bias);
     }
 
-    private static Problem constructProblem(List<Integer> vy, List<FeatureNode[]> vx, int max_index, double bias) {
+    private static Problem constructProblem(List<Integer> vy, List<SparseVector> vx, int max_index, double bias) {
         Problem prob = new Problem();
         prob.bias = bias;
         prob.l = vy.size();
         prob.n = max_index;
-        if (bias >= 0) {
+        /*if (bias >= 0) {
             prob.n++;
-        }
-        prob.x = new FeatureNode[prob.l][];
+        }*/
+        prob.x = vx;
+        // FIXME: add bias computation
         for (int i = 0; i < prob.l; i++) {
-            prob.x[i] = vx.get(i);
+            //prob.x[i] = vx.get(i);
 
-            if (bias >= 0) {
+            /*if (bias >= 0) {
                 assert prob.x[i][prob.x[i].length - 1] == null;
                 prob.x[i][prob.x[i].length - 1] = new FeatureNode(max_index + 1, bias);
             } else {
                 assert prob.x[i][prob.x[i].length - 1] != null;
-            }
+            }*/
         }
 
         prob.y = new int[prob.l];
