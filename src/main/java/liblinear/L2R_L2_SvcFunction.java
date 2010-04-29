@@ -110,7 +110,7 @@ class L2R_L2_SvcFunction implements Function {
             Xv[i] = 0;
         	SparseVector xi = prob.x.get(I[i]);
         	for(int j = 0; j != xi.numLocations(); j++)
-        		Xv[xi.indexAtLocation(j) - 1] = v[i] * xi.valueAtLocation(j);
+        		Xv[i] = v[xi.indexAtLocation(j) - 1] * xi.valueAtLocation(j);
         }
     }
 
@@ -120,7 +120,7 @@ class L2R_L2_SvcFunction implements Function {
             Xv[i] = 0;
         	SparseVector xi = prob.x.get(I[i]);
         	for(int j = 0; j != xi.numLocations(); j++)
-        		Xv[xi.indexAtLocation(j) - 1] = v[i] * xi.valueAtLocation(j);
+        		Xv[i] = v[xi.indexAtLocation(j) - 1] * xi.valueAtLocation(j);
 
         }
     }
