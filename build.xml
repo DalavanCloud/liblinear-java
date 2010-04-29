@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     18.01.2010 10:46:29                                                        
+
+     SVM iitp project    
+     Basic project for linear SVM DCD solver
+                   
+     ant                                                                
+     ====================================================================== -->
+<project name="SVM iitp project" default="jar">
+    <description>
+            impl of LIBLINEAR in java
+    </description>
+	
+	<property name="build.dir" value="build"/>
+	<property name="src.dir" value="src/main/java"/>
+	<property name="jar.dir" value="jar"/>
+		
+	<property name="jar.path" value="liblinear.jar"/>
+	<property environment="env"/>
+	
+	
+	<path id="jar.classpath">
+		<fileset dir="lib" includes="**/*.jar"/>
+	</path>
+	
+	<!-- ================================= 
+          target: clean              
+         ================================= -->
+    <target name="clean" depends="" description="Clean build directory">
+        <delete dir="${build.dir}"/>
+    </target>
+	
+	<!-- ================================= 
+          target: compile              
+         ================================= -->
+    <target name="compile" depends="" description="Compile project">
+        <mkdir dir="${build.dir}"/>
+	<javac srcdir="${src.dir}"  destdir="${build.dir}" classpath="${jar.classpath}" debug="true">
+		<classpath refid="jar.classpath"/>
+	</javac>
+    	<mkdir dir="${build.dir}/lib"/>
+		<copy todir="${build.dir}/lib">
+			<path refid="jar.classpath"/>
+			
+    	</copy>
+    </target>
+	
+	<!-- ================================= 
+          target: jar              
+         ================================= -->
+    <target name="jar" depends="compile" description="Build a jar file">
+    	<manifestclasspath property="jar.classpath" jarfile="${jar.path}">
+    	      <classpath refid="jar.classpath"/>
+    	</manifestclasspath>
+    	
+        <jar destfile="${jar.path}" basedir="${build.dir}">
+        	<manifest>
+        		<attribute name="Main-Class" value="${main.class}"/>
+        		<attribute name="Class-Path" value="${jar.classpath}"/>
+        	</manifest>
+        </jar>
+    </target>
+
+    <!-- ================================= 
+          target: default              
+         ================================= -->
+    <target name="default" depends="depends" description="Basic project for linear SVM DCD solver">
+        
+    </target>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: depends                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="depends">
+    </target>
+
+</project>
