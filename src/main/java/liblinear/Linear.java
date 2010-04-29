@@ -1,5 +1,8 @@
 package liblinear;
 
+import gnu.trove.TDoubleArrayList;
+import gnu.trove.TIntArrayList;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -370,19 +373,19 @@ public class Linear {
         for (int i = 0; i < nr_w; i++)
             dec_values[i] = 0;
   
-        // FIXME: is w a row vector?
+
         for(int i = 0; i < nr_w; i++){
         	dec_values[i] = LinearKernel.dot(w, x);
         }
-/*        for (FeatureNode lx : x) {
-            int idx = lx.index;
+        for (int k = 0; k != x.numLocations(); k++) {
+            int idx = x.indexAtLocation(k);
             // the dimension of testing data may exceed that of training
             if (idx <= n) {
                 for (int i = 0; i < nr_w; i++) {
-                    dec_values[i] += w[(idx - 1) * nr_w + i] * lx.value;
+                    dec_values[i] += w[(idx - 1) * nr_w + i] * x.valueAtLocation(k);
                 }
             }
-        }*/
+        }
         
         
 
@@ -538,9 +541,6 @@ public class Linear {
             }
             QD[i] = diag[GETI(y, i)];
 
-            /*for (FeatureNode xi : prob.x.get[i]) {
-                QD[i] += xi.value * xi.value;
-            }*/
             QD[i] += LinearKernel.snorm(prob.x.get(i));
             index[i] = i;
         }
@@ -700,8 +700,7 @@ public class Linear {
             for (int k = 0; k != xi.numLocations(); k++){
                 int ind = xi.indexAtLocation(k) - 1;
                 double val = xi.valueAtLocation(k);
-                xi.setValueAtLocation(ind + 1, val * y[ind]);
-                //xi.value *= y[ind]; // x->value stores yi*xij
+                xi.setValueAtLocation(ind + 1, val * y[ind]); // x->value stores yi*xij
                 xj_sq[j] += C[GETI(y, ind)] * val * val;
             }
         }
@@ -798,14 +797,15 @@ public class Linear {
                         }
                     } else {
                         loss_new = 0;
-                        /*for (FeatureNode x : prob_col.x[j]) {
-                            int ind = x.index - 1;
-                            double b_new = b[ind] + d_diff * x.value;
+                        SparseVector x = prob_col.x.get(j);
+                        for (int k = 0; k != x.numLocations(); k++) {
+                            int ind = x.indexAtLocation(k) - 1;
+                            double b_new = b[ind] + d_diff * x.valueAtLocation(k);
                             b[ind] = b_new;
                             if (b_new > 0) {
                                 loss_new += C[GETI(y, ind)] * b_new * b_new;
                             }
-                        }*/
+                        }
                     }
 
                     cond = cond + loss_new - loss_old;
@@ -828,9 +828,10 @@ public class Linear {
 
                     for (int i = 0; i < w_size; i++) {
                         if (w[i] == 0) continue;
-                        /*for (FeatureNode x : prob_col.x[i]) {
-                            b[x.index - 1] -= w[i] * x.value;
-                        }*/
+                        SparseVector x = prob_col.x.get(i);
+                        for (int k = 0; k != x.numLocations(); k++) {
+                            b[x.indexAtLocation(k) - 1] -= w[i] * x.valueAtLocation(k);
+                        }
                     }
                 }
             }
@@ -861,9 +862,11 @@ public class Linear {
         double v = 0;
         int nnz = 0;
         for (j = 0; j < w_size; j++) {
-            /*for (FeatureNode x : prob_col.x[j]) {
-                x.value *= prob_col.y[x.index - 1]; // restore x->value
-            }*/
+        	SparseVector x = prob_col.x.get(j);
+            for (int k = 0; k != x.numLocations(); k++) {
+            	double value = x.valueAtLocation(k) * prob_col.y[x.indexAtLocation(k - 1)];
+            	x.setValueAtLocation(k, value);
+            }
             if (w[j] != 0) {
                 v += Math.abs(w[j]);
                 nnz++;
@@ -933,9 +936,10 @@ public class Linear {
             C_sum[j] = 0;
             xjneg_sum[j] = 0;
             xjpos_sum[j] = 0;
-            /*for (FeatureNode x : prob_col.x[j]) {
-                int ind = x.index - 1;
-                double val = x.value;
+            SparseVector x = prob_col.x.get(j);
+            for (int k = 0; k != x.numLocations(); k++) {
+                int ind = x.indexAtLocation(k) - 1;
+                double val = x.valueAtLocation(k);
                 x_min = Math.min(x_min, val);
                 xj_max[j] = Math.max(xj_max[j], val);
                 C_sum[j] += C[GETI(y, ind)];
@@ -943,7 +947,7 @@ public class Linear {
                     xjneg_sum[j] += C[GETI(y, ind)] * val;
                 else
                     xjpos_sum[j] += C[GETI(y, ind)] * val;
-            }*/
+            }
         }
 
         while (iter < max_iter) {
@@ -959,17 +963,17 @@ public class Linear {
                 sum1 = 0;
                 sum2 = 0;
                 H = 0;
-
-/*                for (FeatureNode x : prob_col.x[j]) {
-                    int ind = x.index - 1;
+                SparseVector x = prob_col.x.get(j);
+                for (int k = 0; k != x.numLocations(); k++) {
+                    int ind = x.indexAtLocation(k) - 1;
                     double exp_wTxind = exp_wTx[ind];
-                    double tmp1 = x.value / (1 + exp_wTxind);
+                    double tmp1 = x.valueAtLocation(k) / (1 + exp_wTxind);
                     double tmp2 = C[GETI(y, ind)] * tmp1;
                     double tmp3 = tmp2 * exp_wTxind;
                     sum2 += tmp2;
                     sum1 += tmp3;
                     H += tmp1 * tmp3;
-                }*/
+                }
 
                 G = -sum2 + xjneg_sum[j];
 
@@ -1016,9 +1020,10 @@ public class Linear {
                         appxcond1 = Math.log(1 + sum1 * (tmp - 1) / xj_max[j] / C_sum[j]) * C_sum[j] + cond - d * xjpos_sum[j];
                         appxcond2 = Math.log(1 + sum2 * (1 / tmp - 1) / xj_max[j] / C_sum[j]) * C_sum[j] + cond + d * xjneg_sum[j];
                         if (Math.min(appxcond1, appxcond2) <= 0) {
-/*                            for (FeatureNode x : prob_col.x[j]) {
-                                exp_wTx[x.index - 1] *= Math.exp(d * x.value);
-                            }*/
+                        	//SparseVector x = prob_col.x.get(j);
+                            for (int k = 0; k != x.numLocations(); k++) {
+                                exp_wTx[x.indexAtLocation(k) - 1] *= Math.exp(d * x.valueAtLocation(k));
+                            }
                             break;
                         }
                     }
@@ -1026,21 +1031,21 @@ public class Linear {
                     cond += d * xjneg_sum[j];
 
                     int i = 0;
-                    /*for (FeatureNode x : prob_col.x[j]) {
-                        int ind = x.index - 1;
-                        double exp_dx = Math.exp(d * x.value);
+                    for (int k = 0; k != x.numLocations(); k++) {
+                        int ind = x.indexAtLocation(k) - 1;
+                        double exp_dx = Math.exp(d * x.valueAtLocation(k));
                         exp_wTx_new[i] = exp_wTx[ind] * exp_dx;
                         cond += C[GETI(y, ind)] * Math.log((1 + exp_wTx_new[i]) / (exp_dx + exp_wTx_new[i]));
                         i++;
-                    }*/
+                    }
 
                     if (cond <= 0) {
                         i = 0;
-                    /*    for (FeatureNode x : prob_col.x[j]) {
-                            int ind = x.index - 1;
+                        for (int k = 0; k != x.numLocations(); k++) {
+                            int ind = x.indexAtLocation(k) - 1;
                             exp_wTx[ind] = exp_wTx_new[i];
                             i++;
-                        }*/
+                        }
                         break;
                     } else {
                         d *= 0.5;
@@ -1058,9 +1063,10 @@ public class Linear {
 
                     for (int i = 0; i < w_size; i++) {
                         if (w[i] == 0) continue;
-                      /*  for (FeatureNode x : prob_col.x[i]) {
-                            exp_wTx[x.index - 1] += w[i] * x.value;
-                        }*/
+                        SparseVector xi = prob_col.x.get(i);
+                        for (int k = 0; k != xi.numLocations(); k++) {
+                            exp_wTx[xi.indexAtLocation(k) - 1] += w[i] * x.valueAtLocation(k);
+                        }
                     }
 
                     for (int i = 0; i < l; i++)
@@ -1117,23 +1123,38 @@ public class Linear {
         prob_col.l = l;
         prob_col.n = n;
         prob_col.y = new int[l];
-        //prob_col.x = new FeatureNode[n][];
-
-        for (int i = 0; i < l; i++)
-            prob_col.y[i] = prob.y[i];
-
-        /*for (int i = 0; i < l; i++) {
-            for (FeatureNode x : prob.x[i]) {
-                col_ptr[x.index]++;
-            }
-        }*/
-
-        /*for (int i = 0; i < n; i++) {
-            prob_col.x[i] = new FeatureNode[col_ptr[i + 1]];
-            col_ptr[i] = 0; // reuse the array to count the nr of elements
+        prob_col.x = new ArrayList<SparseVector>();
+        
+        for(int i = 0; i != n; i++){ // for each feature
+        	TIntArrayList indexes = new TIntArrayList();
+        	TDoubleArrayList values = new TDoubleArrayList();
+        	for(int j = 0; j != l; j++){// for each sample
+        		SparseVector x = prob.x.get(j);
+        		int idx = x.location(i);
+        		if(idx >= 0){
+        			indexes.add(j);
+        			values.add(x.valueAtLocation(idx));
+        		}
+        	}
+        	prob_col.x.add(new SparseVector(indexes.toNativeArray(), values.toNativeArray()));
         }
 
+        /*for (int i = 0; i < l; i++)
+            prob_col.y[i] = prob.y[i];
+
         for (int i = 0; i < l; i++) {
+        	SparseVector x = prob.x.get(i);
+            for (int k = 0; k != x.numLocations(); k++) {
+                col_ptr[x.indexAtLocation(k)]++;
+            }
+        }
+
+        /*for (int i = 0; i < n; i++) {
+            //prob_col.x[i] = new FeatureNode[col_ptr[i + 1]];
+            //col_ptr[i] = 0; // reuse the array to count the nr of elements
+        }*/
+
+        /*for (int i = 0; i < l; i++) {
             for (int j = 0; j < prob.x[i].length; j++) {
                 FeatureNode x = prob.x[i][j];
                 int index = x.index - 1;
