@@ -374,10 +374,6 @@ public class Linear {
         for (int i = 0; i < nr_w; i++)
             dec_values[i] = 0;
   
-
-        for(int i = 0; i < nr_w; i++){
-        	dec_values[i] = LinearKernel.dot(w, x);
-        }
         for (int k = 0; k != x.numLocations(); k++) {
             int idx = x.indexAtLocation(k);
             // the dimension of testing data may exceed that of training
@@ -505,7 +501,7 @@ public class Linear {
      */
     private static void solve_l2r_l1l2_svc(Problem prob, double[] w, double eps, double Cp, double Cn, SolverType solver_type) {
         int l = prob.l;
-        int w_size = prob.n + 1;
+        int w_size = prob.n;
         int i, s, iter = 0;
         double C, d, G;
         double[] QD = new double[l];
@@ -542,7 +538,9 @@ public class Linear {
             }
             QD[i] = diag[GETI(y, i)];
 
-            QD[i] += LinearKernel.snorm(prob.x.get(i));
+            SparseVector x = prob.x.get(i);
+            for(int k = 0; k != x.numLocations(); k++)
+            	QD[i] += x.valueAtLocation(k) * x.valueAtLocation(k); 
             index[i] = i;
         }
         long elapsed = System.nanoTime();
@@ -557,15 +555,14 @@ public class Linear {
 
             for (s = 0; s < active_size; s++) {
                 i = index[s];
-                
+                G = 0;
                 byte yi = y[i];
                 SparseVector x = prob.x.get(i);
-                G = LinearKernel.dot(w, x);
-
-                /*for (FeatureNode xi : prob.x[i]) {
-                    G += w[xi.index - 1] * xi.value;
-                }*/
                 
+                
+                for(int j = 0; j != x.numLocations(); j++)
+                	G += w[x.indexAtLocation(j) - 1] * x.valueAtLocation(j);
+
                 G = G * yi - 1;
 
                 C = upper_bound[GETI(y, i)];
@@ -602,10 +599,9 @@ public class Linear {
                     alpha[i] = Math.min(Math.max(alpha[i] - G / QD[i], 0.0), C);
                     d = (alpha[i] - alpha_old) * yi;
 
-                    /*for (FeatureNode xi : prob.x[i]) {
-                        w[xi.index - 1] += d * xi.value;
-                    }*/
-                    LinearKernel.add(w, x, d);
+                    for (int j = 0; j != x.numLocations(); j++) {
+                        w[x.indexAtLocation(j) - 1] += d * x.valueAtLocation(j);
+                    }
                 }
             }
 
@@ -1246,7 +1242,7 @@ public class Linear {
             solver.solve(model.w);
         } else {
             if (nr_class == 2) {
-                model.w = new double[w_size + 1];
+                model.w = new double[w_size];
 
                 int e0 = start[0] + count[0];
                 k = 0;

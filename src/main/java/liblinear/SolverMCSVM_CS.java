@@ -93,10 +93,10 @@ class SolverMCSVM_CS {
         for (i = 0; i < l; i++) {
             for (m = 0; m < nr_class; m++)
                 alpha_index[i * nr_class + m] = m;
-            QD[i] = LinearKernel.snorm(prob.x.get(i));
-            /*for (FeatureNode xi : prob.x[i]) {
-                QD[i] += xi.value * xi.value;
-            }*/
+            SparseVector x = prob.x.get(i);
+            for(int k = 0; k != x.numLocations(); k++)
+            	QD[i] += x.valueAtLocation(k) * x.valueAtLocation(k); 
+
             active_size_i[i] = nr_class;
             y_index[i] = prob.y[i];
             index[i] = i;
