@@ -189,7 +189,6 @@ public class Train {
     public static Problem readProblem(File file, double bias) throws IOException, InvalidInputDataException {
         BufferedReader fp = new BufferedReader(new FileReader(file));
         List<Integer> vy = new ArrayList<Integer>();
-        //List<FeatureNode[]> vx = new ArrayList<FeatureNode[]>();
         List<SparseVector> vx = new ArrayList<SparseVector>();
         int max_index = 0;
 
@@ -240,8 +239,12 @@ public class Train {
                         throw new InvalidInputDataException("invalid value: " + token, file, lineNr);
                     }
                 }
+                if(bias >= 0.0){
+                	indexes.add(0);
+                	values.add(1.0);
+                }
 
-                vx.add(new SparseVector(indexes.toNativeArray(), values.toNativeArray()));
+                vx.add(new SparseVector(indexes.toNativeArray(), values.toNativeArray(), false, false));
             }
 
             return constructProblem(vy, vx, max_index, bias);
@@ -260,20 +263,20 @@ public class Train {
         prob.bias = bias;
         prob.l = vy.size();
         prob.n = max_index;
-        /*if (bias >= 0) {
+        if (bias >= 0) {
             prob.n++;
-        }*/
+        }
         prob.x = vx;
-        // FIXME: add bias computation
-        for (int i = 0; i < prob.l; i++) {
-            //prob.x[i] = vx.get(i);
 
-            /*if (bias >= 0) {
-                assert prob.x[i][prob.x[i].length - 1] == null;
-                prob.x[i][prob.x[i].length - 1] = new FeatureNode(max_index + 1, bias);
-            } else {
-                assert prob.x[i][prob.x[i].length - 1] != null;
-            }*/
+        for (int i = 0; i < prob.l; i++) {
+        	SparseVector x = vx.get(i);
+        	int x_size = x.numLocations();
+        	if (bias >= 0){
+        		assert x.indexAtLocation(x_size - 1) == 0;
+        		x.getIndices()[x_size - 1] = max_index + 1;
+        	}else{
+        		assert x.indexAtLocation(x_size -1) != 0;
+        	}
         }
 
         prob.y = new int[prob.l];
