@@ -1140,30 +1140,6 @@ public class Linear {
         	prob_col.x.add(new SparseVector(indexes.toNativeArray(), values.toNativeArray()));
         }
 
-        /*for (int i = 0; i < l; i++)
-            prob_col.y[i] = prob.y[i];
-
-        for (int i = 0; i < l; i++) {
-        	SparseVector x = prob.x.get(i);
-            for (int k = 0; k != x.numLocations(); k++) {
-                col_ptr[x.indexAtLocation(k)]++;
-            }
-        }
-
-        /*for (int i = 0; i < n; i++) {
-            //prob_col.x[i] = new FeatureNode[col_ptr[i + 1]];
-            //col_ptr[i] = 0; // reuse the array to count the nr of elements
-        }*/
-
-        /*for (int i = 0; i < l; i++) {
-            for (int j = 0; j < prob.x[i].length; j++) {
-                FeatureNode x = prob.x[i][j];
-                int index = x.index - 1;
-                prob_col.x[index][col_ptr[index]] = new FeatureNode(i + 1, x.value);
-                col_ptr[index]++;
-            }
-        }*/
-
         return prob_col;
     }
 
