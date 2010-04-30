@@ -18,6 +18,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
@@ -1122,7 +1123,7 @@ public class Linear {
         Problem prob_col = new Problem();
         prob_col.l = l;
         prob_col.n = n;
-        prob_col.y = new int[l];
+        prob_col.y = Arrays.copyOf(prob.y, prob.y.length);
         prob_col.x = new ArrayList<SparseVector>();
         
         for(int i = 0; i != n; i++){ // for each feature
