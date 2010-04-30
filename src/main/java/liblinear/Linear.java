@@ -700,7 +700,7 @@ public class Linear {
             for (int k = 0; k != xi.numLocations(); k++){
                 int ind = xi.indexAtLocation(k) - 1;
                 double val = xi.valueAtLocation(k);
-                xi.setValueAtLocation(ind + 1, val * y[ind]); // x->value stores yi*xij
+                xi.setValue(ind + 1, val * y[ind]); // x->value stores yi*xij
                 xj_sq[j] += C[GETI(y, ind)] * val * val;
             }
         }
@@ -864,7 +864,7 @@ public class Linear {
         for (j = 0; j < w_size; j++) {
         	SparseVector x = prob_col.x.get(j);
             for (int k = 0; k != x.numLocations(); k++) {
-            	double value = x.valueAtLocation(k) * prob_col.y[x.indexAtLocation(k - 1)];
+            	double value = x.valueAtLocation(k) * prob_col.y[x.indexAtLocation(k) - 1];
             	x.setValueAtLocation(k, value);
             }
             if (w[j] != 0) {
@@ -1130,9 +1130,9 @@ public class Linear {
         	TDoubleArrayList values = new TDoubleArrayList();
         	for(int j = 0; j != l; j++){// for each sample
         		SparseVector x = prob.x.get(j);
-        		int idx = x.location(i);
+        		int idx = x.location(i + 1);
         		if(idx >= 0){
-        			indexes.add(j);
+        			indexes.add(j + 1);
         			values.add(x.valueAtLocation(idx));
         		}
         	}
