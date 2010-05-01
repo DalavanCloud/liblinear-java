@@ -47,9 +47,6 @@ public class Linear {
     private static Object      OUTPUT_MUTEX        = new Object();
     private static PrintStream DEBUG_OUTPUT        = System.out;
 
-    /** platform-independent new-line string */
-    final static String        NL                  = System.getProperty("line.separator");
-
     private static final long  DEFAULT_RANDOM_SEED = 0L;
     static Random              random              = new Random(DEFAULT_RANDOM_SEED);
 
@@ -625,7 +622,7 @@ public class Linear {
             if (PGmin_old >= 0) PGmin_old = Double.NEGATIVE_INFINITY;
         }
 
-        info(NL + "optimization finished, #iter = %d" + NL, iter);
+        info("%noptimization finished, #iter = %d%n", iter);
         info("Elapsed: %f secs\n", (System.nanoTime() - elapsed)*1.0E-9);
         if (iter >= max_iter) info("\nWARNING: reaching max number of iterations\nUsing -s 2 may be faster (also see FAQ)\n\n");
 
@@ -639,8 +636,8 @@ public class Linear {
             v += alpha[i] * (alpha[i] * diag[GETI(y, i)] - 2);
             if (alpha[i] > 0) ++nSV;
         }
-        info("Objective value = %f" + NL, v / 2);
-        info("nSV = %d" + NL, nSV);
+        info("Objective value = %f%n", v / 2);
+        info("nSV = %d%n", nSV);
     }
 
     /**
