@@ -37,7 +37,7 @@ class Tron {
         // Parameters for updating the trust region size delta.
         double sigma1 = 0.25, sigma2 = 0.5, sigma3 = 4;
 
-        int n = fun_obj.get_nr_variable();
+        int n = w.length;//fun_obj.get_nr_variable();
         int i, cg_iter;
         double delta, snorm, one = 1.0;
         double alpha, f, fnew, prered, actred, gs;
@@ -129,7 +129,7 @@ class Tron {
     // int TRON::trcg(double delta, double *g, double *s, double *r)
     int trcg(double delta, double[] g, double[] s, double[] r) {
         int i, inc = 1;
-        int n = fun_obj.get_nr_variable();
+        int n = g.length;//fun_obj.get_nr_variable();
         double one = 1;
         double[] d = new double[n];
         double[] Hd = new double[n];

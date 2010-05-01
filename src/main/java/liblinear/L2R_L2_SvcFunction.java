@@ -35,7 +35,6 @@ class L2R_L2_SvcFunction implements Function {
         double f = 0;
         int[] y = prob.y;
         int l = prob.l;
-        int w_size = get_nr_variable();
 
         Xv(w, z);
         for (i = 0; i < l; i++) {
@@ -44,22 +43,17 @@ class L2R_L2_SvcFunction implements Function {
             if (d > 0) f += C[i] * d * d;
         }
         f = 2 * f;
-        for (i = 0; i < w_size; i++)
+        for (i = 0; i < w.length; i++)
             f += w[i] * w[i];
         f /= 2.0;
 
         return (f);
     }
 
-    public int get_nr_variable() {
-        return prob.n;
-    }
-
     public void grad(double[] w, double[] g) {
         int i;
         int[] y = prob.y;
         int l = prob.l;
-        int w_size = get_nr_variable();
 
         sizeI = 0;
         for (i = 0; i < l; i++) {
@@ -71,14 +65,13 @@ class L2R_L2_SvcFunction implements Function {
         }
         subXTv(z, g);
 
-        for (i = 0; i < w_size; i++)
+        for (i = 0; i < w.length; i++)
             g[i] = w[i] + 2 * g[i];
     }
 
     public void Hv(double[] s, double[] Hs) {
         int i;
         int l = prob.l;
-        int w_size = get_nr_variable();
         double[] wa = new double[l];
 
         subXv(s, wa);
@@ -86,15 +79,14 @@ class L2R_L2_SvcFunction implements Function {
             wa[i] = C[I[i]] * wa[i];
 
         subXTv(wa, Hs);
-        for (i = 0; i < w_size; i++)
+        for (i = 0; i < Hs.length; i++)
             Hs[i] = s[i] + 2 * Hs[i];
     }
 
     private void subXTv(double[] v, double[] XTv) {
         int i;
-        int w_size = get_nr_variable();
 
-        for (i = 0; i < w_size; i++)
+        for (i = 0; i < XTv.length; i++)
             XTv[i] = 0;
 
         for (i = 0; i < sizeI; i++) {
@@ -124,5 +116,10 @@ class L2R_L2_SvcFunction implements Function {
 
         }
     }
+
+	@Override
+	public int get_nr_variable() {
+		return prob.n;
+	}
 
 }

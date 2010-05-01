@@ -1094,7 +1094,7 @@ public class Linear {
 
         double v = 0;
         int nnz = 0;
-        for (j = 0; j < w_size; j++)
+        for (j = 0; j < w.length; j++)
             if (w[j] != 0) {
                 v += Math.abs(w[j]);
                 nnz++;
@@ -1152,7 +1152,7 @@ public class Linear {
         		
         }
         
-        for(int i = 0; i != n; i++){
+        for(int i = 0; i != n - 1; i++){
         	prob_col.x.add(new SparseVector(inds[i], vals[i]));
         }
 
