@@ -1113,6 +1113,7 @@ public class Linear {
 
     // transpose matrix X from row format to column format
     static Problem transpose(Problem prob) {
+    	//long start = System.nanoTime();
         int l = prob.l;
         int n = prob.n;
         int[] col_ptr = new int[n + 1];
@@ -1122,20 +1123,42 @@ public class Linear {
         prob_col.y = Arrays.copyOf(prob.y, prob.y.length);
         prob_col.x = new ArrayList<SparseVector>();
         
-        for(int i = 0; i != n; i++){ // for each feature
-        	TIntArrayList indexes = new TIntArrayList();
-        	TDoubleArrayList values = new TDoubleArrayList();
-        	for(int j = 0; j != l; j++){// for each sample
-        		SparseVector x = prob.x.get(j);
-        		int idx = x.location(i + 1);
-        		if(idx >= 0){
-        			indexes.add(j + 1);
-        			values.add(x.valueAtLocation(idx));
-        		}
+        
+        for(int i = 0; i != l; i++){
+        	SparseVector x = prob.x.get(i);
+        	for(int j = 0; j != x.numLocations(); j++)
+        		col_ptr[x.indexAtLocation(j)]++;
+        }
+        
+        int[][] inds = new int[n][];
+        double[][] vals = new double[n][];
+        
+        for(int i = 0; i != n; i++){
+        	inds[i] = new int[col_ptr[i + 1]];
+        	vals[i] = new double[col_ptr[i + 1]];
+        }
+        
+        // reuse col_ptr for storing current indexes of each sample
+        for(int i = 0; i != n; i++)
+        	col_ptr[i] = 0;
+        
+        for(int i = 0; i != l; i++){
+        	SparseVector x = prob.x.get(i);
+        	for(int j = 0; j != x.numLocations(); j++){
+        		int index = x.indexAtLocation(j) - 1; 
+        		inds[index][col_ptr[index]] = i + 1;
+        		vals[index][col_ptr[index]] = x.valueAtLocation(j);
+        		col_ptr[index]++;
+        		
         	}
-        	prob_col.x.add(new SparseVector(indexes.toNativeArray(), values.toNativeArray()));
+        		
+        }
+        
+        for(int i = 0; i != n; i++){
+        	prob_col.x.add(new SparseVector(inds[i], vals[i]));
         }
 
+        //System.out.printf("Elapsed on transpose: %f secs%n", (System.nanoTime() - start)*1.0E-9);
         return prob_col;
     }
 
