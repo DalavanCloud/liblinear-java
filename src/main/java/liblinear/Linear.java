@@ -498,7 +498,6 @@ public class Linear {
      */
     private static void solve_l2r_l1l2_svc(Problem prob, double[] w, double eps, double Cp, double Cn, SolverType solver_type) {
         int l = prob.l;
-        int w_size = prob.n;
         int i, s, iter = 0;
         double C, d, G;
         double[] QD = new double[l];
@@ -524,7 +523,7 @@ public class Linear {
             upper_bound[2] = Cp;
         }
 
-        for (i = 0; i < w_size; i++)
+        for (i = 0; i < w.length; i++)
             w[i] = 0;
         for (i = 0; i < l; i++) {
             alpha[i] = 0;
@@ -630,7 +629,7 @@ public class Linear {
 
         double v = 0;
         int nSV = 0;
-        for (i = 0; i < w_size; i++)
+        for (i = 0; i < w.length; i++)
             v += w[i] * w[i];
         for (i = 0; i < l; i++) {
             v += alpha[i] * (alpha[i] * diag[GETI(y, i)] - 2);
