@@ -8,11 +8,15 @@ import gnu.trove.TIntArrayList;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.zip.GZIPInputStream;
 
 import cc.mallet.types.SparseVector;
 
@@ -186,7 +190,11 @@ public class Train {
      * @throws InvalidInputDataException if the input file is not correctly formatted
      */
     public static Problem readProblem(File file, double bias) throws IOException, InvalidInputDataException {
-        BufferedReader fp = new BufferedReader(new FileReader(file));
+    	InputStream is = new FileInputStream(file);
+    	if(file.getName().endsWith(".gz"))
+    		is = new GZIPInputStream(is);
+    	
+        BufferedReader fp = new BufferedReader(new InputStreamReader(is));
         List<Integer> vy = new ArrayList<Integer>();
         List<SparseVector> vx = new ArrayList<SparseVector>();
         int max_index = 0;
@@ -250,6 +258,7 @@ public class Train {
         }
         finally {
             fp.close();
+            is.close();
         }
     }
 
