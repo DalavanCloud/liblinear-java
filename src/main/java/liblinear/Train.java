@@ -262,7 +262,7 @@ public class Train {
         Problem prob = new Problem();
         prob.bias = bias;
         prob.l = vy.size();
-        prob.n = max_index;
+        prob.n = max_index + 1;
         if (bias >= 0) {
             prob.n++;
         }
@@ -273,9 +273,9 @@ public class Train {
         	int x_size = x.numLocations();
         	if (bias >= 0){
         		assert x.indexAtLocation(x_size - 1) == 0;
-        		x.getIndices()[x_size - 1] = max_index + 1;
+        		x.getIndices()[x_size - 1] = prob.n + 1;
         	}else{
-        		assert x.indexAtLocation(x_size -1) != 0;
+        		assert x.indexAtLocation(x_size - 1) != 0;
         	}
         }
 

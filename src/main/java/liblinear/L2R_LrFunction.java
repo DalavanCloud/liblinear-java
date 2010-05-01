@@ -35,7 +35,7 @@ class L2R_LrFunction implements Function {
             Xv[i] = 0;
             SparseVector x = prob.x.get(i);
             for(int j = 0; j != x.numLocations(); j++)
-            	Xv[i] += v[x.indexAtLocation(j) - 1] * x.valueAtLocation(j);            
+            	Xv[i] += v[x.indexAtLocation(j)] * x.valueAtLocation(j);            
         }
     }
 
@@ -51,7 +51,7 @@ class L2R_LrFunction implements Function {
         for (int i = 0; i < l; i++) {
         	SparseVector xi = prob.x.get(i);
         	for(int j = 0; j != xi.numLocations(); j++)
-        		XTv[xi.indexAtLocation(j) - 1] += v[i] * xi.valueAtLocation(j);
+        		XTv[xi.indexAtLocation(j)] += v[i] * xi.valueAtLocation(j);
         	
         	
         }

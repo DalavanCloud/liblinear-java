@@ -379,7 +379,7 @@ public class Linear {
             // the dimension of testing data may exceed that of training
             if (idx <= n) {
                 for (int i = 0; i < nr_w; i++) {
-                    dec_values[i] += w[(idx - 1) * nr_w + i] * x.valueAtLocation(k);
+                    dec_values[i] += w[idx * nr_w + i] * x.valueAtLocation(k);
                 }
             }
         }
@@ -561,7 +561,7 @@ public class Linear {
                 
                 
                 for(int j = 0; j != x.numLocations(); j++)
-                	G += w[x.indexAtLocation(j) - 1] * x.valueAtLocation(j);
+                	G += w[x.indexAtLocation(j)] * x.valueAtLocation(j);
 
                 G = G * yi - 1;
 
@@ -600,7 +600,7 @@ public class Linear {
                     d = (alpha[i] - alpha_old) * yi;
 
                     for (int j = 0; j != x.numLocations(); j++) {
-                        w[x.indexAtLocation(j) - 1] += d * x.valueAtLocation(j);
+                        w[x.indexAtLocation(j)] += d * x.valueAtLocation(j);
                     }
                 }
             }

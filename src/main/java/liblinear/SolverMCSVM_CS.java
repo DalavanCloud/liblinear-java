@@ -131,7 +131,7 @@ class SolverMCSVM_CS {
                     SparseVector xi = prob.x.get(i);
                     for (int j = 0; j != xi.numLocations(); j++) {
                         // double *w_i = &w[(xi.index-1)*nr_class];
-                        int w_offset = (xi.indexAtLocation(j) - 1) * nr_class;
+                        int w_offset = (xi.indexAtLocation(j)) * nr_class;
                         for (m = 0; m < active_size_i[i]; m++)
                             // G[m] += w_i[alpha_index_i[m]]*(xi.value);
                             G[m] += w[w_offset + alpha_index_i.get(m)] * (xi.valueAtLocation(j));
@@ -197,7 +197,7 @@ class SolverMCSVM_CS {
                     //SparseVector xi = prob.x.get(i);
                     for (int j = 0; j != xi.numLocations(); j++) {
                         // double *w_i = &w[(xi->index-1)*nr_class];
-                        int w_offset = (xi.indexAtLocation(j) - 1) * nr_class;
+                        int w_offset = (xi.indexAtLocation(j)) * nr_class;
                         for (m = 0; m < nz_d; m++) {
                             w[w_offset + d_ind[m]] += d_val[m] * xi.valueAtLocation(j);
                         }
