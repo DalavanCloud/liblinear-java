@@ -659,7 +659,7 @@ public class Linear {
      */
     private static void solve_l1r_l2_svc(Problem prob_col, double[] w, double eps, double Cp, double Cn) {
         int l = prob_col.l;
-        int w_size = prob_col.n;
+        int w_size = prob_col.n - 1;
         int j, s, iter = 0;
         int max_iter = 1000;
         int active_size = w_size;
@@ -733,7 +733,7 @@ public class Linear {
                 double Gp = G + 1;
                 double Gn = G - 1;
                 double violation = 0;
-                if (w[j] == 0) {
+                if (w[j + 1] == 0) {
                     if (Gp < 0)
                         violation = -Gp;
                     else if (Gn > 0)
@@ -744,7 +744,7 @@ public class Linear {
                         s--;
                         continue;
                     }
-                } else if (w[j] > 0)
+                } else if (w[j + 1] > 0)
                     violation = Math.abs(Gp);
                 else
                     violation = Math.abs(Gn);
@@ -752,21 +752,21 @@ public class Linear {
                 Gmax_new = Math.max(Gmax_new, violation);
 
                 // obtain Newton direction d
-                if (Gp <= H * w[j])
+                if (Gp <= H * w[j + 1])
                     d = -Gp / H;
-                else if (Gn >= H * w[j])
+                else if (Gn >= H * w[j + 1])
                     d = -Gn / H;
                 else
-                    d = -w[j];
+                    d = -w[j + 1];
 
                 if (Math.abs(d) < 1.0e-12) continue;
 
-                double delta = Math.abs(w[j] + d) - Math.abs(w[j]) + G * d;
+                double delta = Math.abs(w[j + 1] + d) - Math.abs(w[j + 1]) + G * d;
                 d_old = 0;
                 int num_linesearch;
                 for (num_linesearch = 0; num_linesearch < max_num_linesearch; num_linesearch++) {
                     d_diff = d_old - d;
-                    cond = Math.abs(w[j] + d) - Math.abs(w[j]) - sigma * delta;
+                    cond = Math.abs(w[j + 1] + d) - Math.abs(w[j + 1]) - sigma * delta;
 
                     appxcond = xj_sq[j] * d * d + G_loss * d + cond;
                     if (appxcond <= 0) {
@@ -815,7 +815,7 @@ public class Linear {
                     }
                 }
 
-                w[j] += d;
+                w[j + 1] += d;
 
                 // recompute b[] if line search takes too many steps
                 if (num_linesearch >= max_num_linesearch) {
@@ -824,10 +824,10 @@ public class Linear {
                         b[i] = 1;
 
                     for (int i = 0; i < w_size; i++) {
-                        if (w[i] == 0) continue;
+                        if (w[i + 1] == 0) continue;
                         SparseVector x = prob_col.x.get(i);
                         for (int k = 0; k != x.numLocations(); k++) {
-                            b[x.indexAtLocation(k) - 1] -= w[i] * x.valueAtLocation(k);
+                            b[x.indexAtLocation(k) - 1] -= w[i + 1] * x.valueAtLocation(k);
                         }
                     }
                 }
@@ -892,7 +892,7 @@ public class Linear {
      */
     private static void solve_l1r_lr(Problem prob_col, double[] w, double eps, double Cp, double Cn) {
         int l = prob_col.l;
-        int w_size = prob_col.n;
+        int w_size = prob_col.n - 1;
         int j, s, iter = 0;
         int max_iter = 1000;
         int active_size = w_size;
@@ -927,7 +927,7 @@ public class Linear {
                 y[j] = -1;
         }
         for (j = 0; j < w_size; j++) {
-            w[j] = 0;
+            w[j + 1] = 0;
             index[j] = j;
             xj_max[j] = 0;
             C_sum[j] = 0;
@@ -977,7 +977,7 @@ public class Linear {
                 double Gp = G + 1;
                 double Gn = G - 1;
                 double violation = 0;
-                if (w[j] == 0) {
+                if (w[j + 1] == 0) {
                     if (Gp < 0)
                         violation = -Gp;
                     else if (Gn > 0)
@@ -988,7 +988,7 @@ public class Linear {
                         s--;
                         continue;
                     }
-                } else if (w[j] > 0)
+                } else if (w[j + 1] > 0)
                     violation = Math.abs(Gp);
                 else
                     violation = Math.abs(Gn);
@@ -996,21 +996,21 @@ public class Linear {
                 Gmax_new = Math.max(Gmax_new, violation);
 
                 // obtain Newton direction d
-                if (Gp <= H * w[j])
+                if (Gp <= H * w[j + 1])
                     d = -Gp / H;
-                else if (Gn >= H * w[j])
+                else if (Gn >= H * w[j + 1])
                     d = -Gn / H;
                 else
-                    d = -w[j];
+                    d = -w[j + 1];
 
                 if (Math.abs(d) < 1.0e-12) continue;
 
                 d = Math.min(Math.max(d, -10.0), 10.0);
 
-                double delta = Math.abs(w[j] + d) - Math.abs(w[j]) + G * d;
+                double delta = Math.abs(w[j + 1] + d) - Math.abs(w[j + 1]) + G * d;
                 int num_linesearch;
                 for (num_linesearch = 0; num_linesearch < max_num_linesearch; num_linesearch++) {
-                    cond = Math.abs(w[j] + d) - Math.abs(w[j]) - sigma * delta;
+                    cond = Math.abs(w[j + 1] + d) - Math.abs(w[j + 1]) - sigma * delta;
 
                     if (x_min >= 0) {
                         double tmp = Math.exp(d * xj_max[j]);
@@ -1050,7 +1050,7 @@ public class Linear {
                     }
                 }
 
-                w[j] += d;
+                w[j + 1] += d;
 
                 // recompute exp_wTx[] if line search takes too many steps
                 if (num_linesearch >= max_num_linesearch) {
@@ -1059,10 +1059,10 @@ public class Linear {
                         exp_wTx[i] = 0;
 
                     for (int i = 0; i < w_size; i++) {
-                        if (w[i] == 0) continue;
+                        if (w[i + 1] == 0) continue;
                         SparseVector xi = prob_col.x.get(i);
                         for (int k = 0; k != xi.numLocations(); k++) {
-                            exp_wTx[xi.indexAtLocation(k) - 1] += w[i] * x.valueAtLocation(k);
+                            exp_wTx[xi.indexAtLocation(k) - 1] += w[i + 1] * x.valueAtLocation(k);
                         }
                     }
 
