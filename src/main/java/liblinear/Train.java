@@ -206,8 +206,16 @@ public class Train {
                 String line = fp.readLine();
                 if (line == null) break;
                 lineNr++;
-
+                int commentPos = line.indexOf('#');
+                
+                if(commentPos != -1)
+                	line = line.substring(0, commentPos);
+                
                 StringTokenizer st = new StringTokenizer(line, " \t\n\r\f:");
+                
+                if(!st.hasMoreTokens())
+                	continue;
+                
                 String token = st.nextToken();
 
                 try {
