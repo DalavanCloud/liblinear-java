@@ -43,7 +43,7 @@ public class Predict {
         double[] prob_estimates = null;
         int n;
         int nr_feature = model.getNrFeature();
-        if (model.bias >= 0)
+        if (model.bias)
             n = nr_feature + 1;
         else
             n = nr_feature;

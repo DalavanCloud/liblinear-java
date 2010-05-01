@@ -256,7 +256,7 @@ public class Linear {
                 } else if (split[0].equals("nr_feature")) {
                     model.nr_feature = atoi(split[1]);
                 } else if (split[0].equals("bias")) {
-                    model.bias = atof(split[1]);
+                    model.bias = atof(split[1]) >= 0;
                 } else if (split[0].equals("w")) {
                     break;
                 } else if (split[0].equals("label")) {
@@ -270,7 +270,8 @@ public class Linear {
             }
 
             int w_size = model.nr_feature;
-            if (model.bias >= 0) w_size++;
+            if (model.bias) 
+            	w_size++;
 
             int nr_w = model.nr_class;
             if (model.nr_class == 2 && model.solverType != SolverType.MCSVM_CS) nr_w = 1;
@@ -355,7 +356,7 @@ public class Linear {
 
     public static int predictValues(Model model, SparseVector x, double[] dec_values) {
         int n;
-        if (model.bias >= 0)
+        if (model.bias)
             n = model.nr_feature + 1;
         else
             n = model.nr_feature;
@@ -410,7 +411,8 @@ public class Linear {
     public static void saveModel(Writer modelOutput, Model model) throws IOException {
         int nr_feature = model.nr_feature;
         int w_size = nr_feature;
-        if (model.bias >= 0) w_size++;
+        if (model.bias) 
+        	w_size++;
 
         int nr_w = model.nr_class;
         if (model.nr_class == 2 && model.solverType != SolverType.MCSVM_CS) nr_w = 1;
@@ -427,7 +429,7 @@ public class Linear {
             printf(formatter, "\n");
 
             printf(formatter, "nr_feature %d\n", nr_feature);
-            printf(formatter, "bias %.16g\n", model.bias);
+            printf(formatter, "bias %.16g\n", model.bias? 1.0 : -1.0);
 
             printf(formatter, "w\n");
             for (int i = 0; i < w_size; i++) {
@@ -1200,7 +1202,7 @@ public class Linear {
         int w_size = prob.n;
         Model model = new Model();
 
-        if (prob.bias >= 0)
+        if (prob.bias)
             model.nr_feature = n - 1;
         else
             model.nr_feature = n;

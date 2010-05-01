@@ -19,7 +19,7 @@ public final class Model implements Serializable {
 
     private static final long serialVersionUID = -6456047576741854834L;
 
-    double                    bias;
+    boolean                    bias;
 
     /** label of each class */
     int[]                     label;
@@ -77,7 +77,7 @@ public final class Model implements Serializable {
     /**
      * @see #getFeatureWeights()
      */
-    public double getBias() {
+    public boolean getBias() {
         return bias;
     }
 
@@ -96,7 +96,7 @@ public final class Model implements Serializable {
         final int prime = 31;
         int result = 1;
         long temp;
-        temp = Double.doubleToLongBits(bias);
+        temp = Boolean.valueOf(bias).hashCode();
         result = prime * result + (int)(temp ^ (temp >>> 32));
         result = prime * result + Arrays.hashCode(label);
         result = prime * result + nr_class;
@@ -112,7 +112,7 @@ public final class Model implements Serializable {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         Model other = (Model)obj;
-        if (Double.doubleToLongBits(bias) != Double.doubleToLongBits(other.bias)) return false;
+        if (bias != other.bias) return false;
         if (!Arrays.equals(label, other.label)) return false;
         if (nr_class != other.nr_class) return false;
         if (nr_feature != other.nr_feature) return false;

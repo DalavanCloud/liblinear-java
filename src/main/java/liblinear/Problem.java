@@ -47,19 +47,18 @@ public class Problem {
     public int[]           y;
 
     /** array of sparse feature nodes */
-    //public FeatureNode[][] x;
     public List<SparseVector> x;
 
     /**
      * If bias &gt;= 0, we assume that one additional feature is added
      * to the end of each data instance
      */
-    public double          bias;
+    public boolean          bias;
 
     /**
      * see {@link Train#readProblem(File, double)}
      */
-    public static Problem readFromFile(File file, double bias) throws IOException, InvalidInputDataException {
+    public static Problem readFromFile(File file, boolean bias) throws IOException, InvalidInputDataException {
         return Train.readProblem(file, bias);
     }
 }

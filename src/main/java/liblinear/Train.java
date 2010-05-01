@@ -27,7 +27,7 @@ public class Train {
         new Train().run(args);
     }
 
-    private double    bias             = 1;
+    private boolean    bias             = false;
     private boolean   cross_validation = false;
     private String    inputFilename;
     private String    modelFilename;
@@ -87,7 +87,7 @@ public class Train {
         return prob;
     }
 
-    double getBias() {
+    boolean getBias() {
         return bias;
     }
 
@@ -101,7 +101,7 @@ public class Train {
         // eps: see setting below
         param = new Parameter(SolverType.L2R_L2LOSS_SVC_DUAL, 1, Double.POSITIVE_INFINITY);
         // default values
-        bias = -1;
+        bias = false;
         cross_validation = false;
 
         int nr_weight = 0;
@@ -121,7 +121,7 @@ public class Train {
                     param.setEps(atof(argv[i]));
                     break;
                 case 'B':
-                    bias = atof(argv[i]);
+                    bias = atof(argv[i]) >= 0;
                     break;
                 case 'w':
                     ++nr_weight;
@@ -189,7 +189,7 @@ public class Train {
      * @throws IOException obviously in case of any I/O exception ;)
      * @throws InvalidInputDataException if the input file is not correctly formatted
      */
-    public static Problem readProblem(File file, double bias) throws IOException, InvalidInputDataException {
+    public static Problem readProblem(File file, boolean bias) throws IOException, InvalidInputDataException {
     	InputStream is = new FileInputStream(file);
     	if(file.getName().endsWith(".gz"))
     		is = new GZIPInputStream(is);
@@ -246,7 +246,7 @@ public class Train {
                         throw new InvalidInputDataException("invalid value: " + token, file, lineNr);
                     }
                 }
-                if(bias >= 0.0){
+                if(bias){
                 	indexes.add(0);
                 	values.add(1.0);
                 }
@@ -266,12 +266,12 @@ public class Train {
         prob = Train.readProblem(new File(filename), bias);
     }
 
-    private static Problem constructProblem(List<Integer> vy, List<SparseVector> vx, int max_index, double bias) {
+    private static Problem constructProblem(List<Integer> vy, List<SparseVector> vx, int max_index, boolean bias) {
         Problem prob = new Problem();
         prob.bias = bias;
         prob.l = vy.size();
         prob.n = max_index + 1;
-        if (bias >= 0) {
+        if (bias) {
             prob.n++;
         }
         prob.x = vx;
@@ -279,9 +279,9 @@ public class Train {
         for (int i = 0; i < prob.l; i++) {
         	SparseVector x = vx.get(i);
         	int x_size = x.numLocations();
-        	if (bias >= 0){
+        	if (bias){
         		assert x.indexAtLocation(x_size - 1) == 0;
-        		x.getIndices()[x_size - 1] = prob.n + 1;
+        		x.getIndices()[x_size - 1] = max_index + 1;
         	}else{
         		assert x.indexAtLocation(x_size - 1) != 0;
         	}
