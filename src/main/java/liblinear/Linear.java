@@ -1,8 +1,5 @@
 package liblinear;
 
-import gnu.trove.TDoubleArrayList;
-import gnu.trove.TIntArrayList;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -53,8 +50,9 @@ public class Linear {
     /**
      * @param target predicted classes
      */
-    public static void crossValidation(Problem prob, Parameter param, int nr_fold, int[] target) {
+    public static int[] crossValidation(Problem prob, Parameter param, int nr_fold) {
         int i;
+        int[] target = new int[prob.l];
         int[] fold_start = new int[nr_fold + 1];
         int l = prob.l;
         int[] perm = new int[l];
@@ -95,6 +93,7 @@ public class Linear {
             for (j = begin; j < end; j++)
                 target[perm[j]] = predict(submodel, prob.x.get(perm[j]));
         }
+        return target;
     }
 
     /** used as complex return type */

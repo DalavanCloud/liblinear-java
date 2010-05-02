@@ -36,11 +36,11 @@ public class Train {
     private Problem   prob             = null;
 
     private void do_cross_validation() {
-        int[] target = new int[prob.l];
+        
 
         long start, stop;
         start = System.currentTimeMillis();
-        Linear.crossValidation(prob, param, nr_fold, target);
+        int[] target = Linear.crossValidation(prob, param, nr_fold);
         stop = System.currentTimeMillis();
         System.out.println("time: " + (stop - start) + " ms");
 
