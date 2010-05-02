@@ -181,7 +181,8 @@ public class Linear {
      * @throws NumberFormatException see {@link Double#parseDouble(String)}
      */
     static double atof(String s) {
-        if (s == null || s.length() < 1) throw new IllegalArgumentException("Can't convert empty string to integer");
+        if (s == null || s.length() < 1) 
+        	throw new IllegalArgumentException("Can't convert empty string to integer");
         double d = Double.parseDouble(s);
         if (Double.isNaN(d) || Double.isInfinite(d)) {
             throw new IllegalArgumentException("NaN or Infinity in input: " + s);
@@ -195,7 +196,8 @@ public class Linear {
      * @throws NumberFormatException see {@link Integer#parseInt(String)}
      */
     static int atoi(String s) throws NumberFormatException {
-        if (s == null || s.length() < 1) throw new IllegalArgumentException("Can't convert empty string to integer");
+        if (s == null || s.length() < 1) 
+        	throw new IllegalArgumentException("Can't convert empty string to integer");
         // Integer.parseInt doesn't accept '+' prefixed strings
         if (s.charAt(0) == '+') s = s.substring(1);
         return Integer.parseInt(s);
@@ -354,19 +356,17 @@ public class Linear {
     }
 
     public static int predictValues(Model model, SparseVector x, double[] dec_values) {
-        int n;
+        int n = model.nr_feature;
+        
         if (model.bias)
-            n = model.nr_feature + 1;
-        else
-            n = model.nr_feature;
+            n++;
 
         double[] w = model.w;
 
-        int nr_w;
+        int nr_w = model.nr_class;
+
         if (model.nr_class == 2 && model.solverType != SolverType.MCSVM_CS)
             nr_w = 1;
-        else
-            nr_w = model.nr_class;
 
         for (int i = 0; i < nr_w; i++)
             dec_values[i] = 0;
@@ -410,11 +410,14 @@ public class Linear {
     public static void saveModel(Writer modelOutput, Model model) throws IOException {
         int nr_feature = model.nr_feature;
         int w_size = nr_feature;
+        
         if (model.bias) 
         	w_size++;
 
         int nr_w = model.nr_class;
-        if (model.nr_class == 2 && model.solverType != SolverType.MCSVM_CS) nr_w = 1;
+        
+        if (model.nr_class == 2 && model.solverType != SolverType.MCSVM_CS) 
+        	nr_w = 1;
 
         Formatter formatter = new Formatter(modelOutput, DEFAULT_LOCALE);
         try {
@@ -603,7 +606,9 @@ public class Linear {
             }
 
             iter++;
-            if (iter % 10 == 0) info(".");
+            
+            if (iter % 10 == 0) 
+            	info(".");
 
             if (PGmax_new - PGmin_new <= eps) {
                 if (active_size == l)
@@ -618,13 +623,17 @@ public class Linear {
             }
             PGmax_old = PGmax_new;
             PGmin_old = PGmin_new;
-            if (PGmax_old <= 0) PGmax_old = Double.POSITIVE_INFINITY;
-            if (PGmin_old >= 0) PGmin_old = Double.NEGATIVE_INFINITY;
+            
+            if (PGmax_old <= 0) 
+            	PGmax_old = Double.POSITIVE_INFINITY;
+            
+            if (PGmin_old >= 0) 
+            	PGmin_old = Double.NEGATIVE_INFINITY;
         }
 
         info("%noptimization finished, #iter = %d%n", iter);
         info("Elapsed: %f secs\n", (System.nanoTime() - elapsed)*1.0E-9);
-        if (iter >= max_iter) info("\nWARNING: reaching max number of iterations\nUsing -s 2 may be faster (also see FAQ)\n\n");
+        if (iter >= max_iter) info("%nWARNING: reaching max number of iterations\nUsing -s 2 may be faster (also see FAQ)%n%n");
 
         // calculate objective value
 
@@ -848,8 +857,8 @@ public class Linear {
             Gmax_old = Gmax_new;
         }
 
-        info("\noptimization finished, #iter = %d\n", iter);
-        if (iter >= max_iter) info("\nWARNING: reaching max number of iterations\n");
+        info("%noptimization finished, #iter = %d%n", iter);
+        if (iter >= max_iter) info("%nWARNING: reaching max number of iterations%n");
 
         // calculate objective value
 
@@ -1068,9 +1077,12 @@ public class Linear {
                 }
             }
 
-            if (iter == 0) Gmax_init = Gmax_new;
+            if (iter == 0) 
+            	Gmax_init = Gmax_new;
             iter++;
-            if (iter % 10 == 0) info(".");
+            
+            if (iter % 10 == 0) 
+            	info(".");
 
             if (Gmax_new <= eps * Gmax_init) {
                 if (active_size == w_size)
@@ -1110,7 +1122,6 @@ public class Linear {
 
     // transpose matrix X from row format to column format
     static Problem transpose(Problem prob) {
-    	//long start = System.nanoTime();
         int l = prob.l;
         int n = prob.n;
         int[] col_ptr = new int[n + 1];
@@ -1155,7 +1166,6 @@ public class Linear {
         	prob_col.x.add(new SparseVector(inds[i], vals[i]));
         }
 
-        //System.out.printf("Elapsed on transpose: %f secs%n", (System.nanoTime() - start)*1.0E-9);
         return prob_col;
     }
 
@@ -1182,8 +1192,10 @@ public class Linear {
      */
     public static Model train(Problem prob, Parameter param) {
 
-        if (prob == null) throw new IllegalArgumentException("problem must not be null");
-        if (param == null) throw new IllegalArgumentException("parameter must not be null");
+        if (prob == null) 
+        	throw new IllegalArgumentException("problem must not be null");
+        if (param == null) 
+        	throw new IllegalArgumentException("parameter must not be null");
 
         for (SparseVector nodes : prob.x) {
             int indexBefore = 0;
@@ -1200,11 +1212,11 @@ public class Linear {
         int n = prob.n;
         int w_size = prob.n;
         Model model = new Model();
+        model.nr_feature = n;
 
         if (prob.bias)
-            model.nr_feature = n - 1;
-        else
-            model.nr_feature = n;
+            model.nr_feature--;
+        
         model.solverType = param.solverType;
         model.bias = prob.bias;
 
@@ -1218,6 +1230,7 @@ public class Linear {
 
         model.nr_class = nr_class;
         model.label = new int[nr_class];
+        
         for (i = 0; i < nr_class; i++)
             model.label[i] = label[i];
 
@@ -1229,14 +1242,15 @@ public class Linear {
 
         for (i = 0; i < param.getNumWeights(); i++) {
             for (j = 0; j < nr_class; j++)
-                if (param.weightLabel[i] == label[j]) break;
-            if (j == nr_class) throw new IllegalArgumentException("class label " + param.weightLabel[i] + " specified in weight is not found");
+                if (param.weightLabel[i] == label[j]) 
+                	break;
+            if (j == nr_class) 
+            	throw new IllegalArgumentException("class label " + param.weightLabel[i] + " specified in weight is not found");
 
             weighted_C[j] *= param.weight[i];
         }
 
         // constructing the subproblem
-        //FeatureNode[][] x = new FeatureNode[l][];
         List<SparseVector> x = new ArrayList<SparseVector>();
         for (i = 0; i < l; i++)
             x.add(prob.x.get(perm[i]));
