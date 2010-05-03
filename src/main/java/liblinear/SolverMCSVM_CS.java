@@ -34,9 +34,11 @@ class SolverMCSVM_CS {
     private final double   eps;
     private final double[] G;
     private final int      max_iter;
-    private final int      w_size, l;
+    private final int      w_size; 
+    private final int	   l;
     private final int      nr_class;
     private final Problem  prob;
+    private final LinearKernel k = new LinearKernel();
 
     public SolverMCSVM_CS( Problem prob, int nr_class, double[] C ) {
         this(prob, nr_class, C, 0.1);
@@ -77,8 +79,6 @@ class SolverMCSVM_CS {
         double[] alpha_new = new double[nr_class];
         int[] index = new int[l];
         double[] QD = new double[l];
-        int[] d_ind = new int[nr_class];
-        double[] d_val = new double[nr_class];
         int[] alpha_index = new int[nr_class * l];
         int[] y_index = new int[l];
         int active_size = l;
@@ -93,9 +93,8 @@ class SolverMCSVM_CS {
         for (i = 0; i < l; i++) {
             for (m = 0; m < nr_class; m++)
                 alpha_index[i * nr_class + m] = m;
-            SparseVector x = prob.x.get(i);
-            for(int k = 0; k != x.numLocations(); k++)
-            	QD[i] += x.valueAtLocation(k) * x.valueAtLocation(k); 
+
+            QD[i] += k.snorm(prob.x.get(i));
 
             active_size_i[i] = nr_class;
             y_index[i] = prob.y[i];
@@ -129,14 +128,8 @@ class SolverMCSVM_CS {
                     if (y_index[i] < active_size_i[i]) G[y_index[i]] = 0;
 
                     SparseVector xi = prob.x.get(i);
-                    for (int j = 0; j != xi.numLocations(); j++) {
-                        // double *w_i = &w[(xi.index-1)*nr_class];
-                        int w_offset = (xi.indexAtLocation(j)) * nr_class;
-                        for (m = 0; m < active_size_i[i]; m++)
-                            // G[m] += w_i[alpha_index_i[m]]*(xi.value);
-                            G[m] += w[w_offset + alpha_index_i.get(m)] * (xi.valueAtLocation(j));
-
-                    }
+                    for (m = 0; m < active_size_i[i]; m++)
+                        G[m] += k.dot(w, alpha_index_i.get(m), xi, nr_class);
 
                     double minG = Double.POSITIVE_INFINITY;
                     double maxG = Double.NEGATIVE_INFINITY;
@@ -183,23 +176,12 @@ class SolverMCSVM_CS {
                         B[m] = G[m] - Ai * alpha_i.get(alpha_index_i.get(m));
 
                     solve_sub_problem(Ai, y_index[i], C[GETI(i)], active_size_i[i], alpha_new);
-                    int nz_d = 0;
+
                     for (m = 0; m < active_size_i[i]; m++) {
                         double d = alpha_new[m] - alpha_i.get(alpha_index_i.get(m));
                         alpha_i.set(alpha_index_i.get(m), alpha_new[m]);
                         if (Math.abs(d) >= 1e-12) {
-                            d_ind[nz_d] = alpha_index_i.get(m);
-                            d_val[nz_d] = d;
-                            nz_d++;
-                        }
-                    }
-
-                    //SparseVector xi = prob.x.get(i);
-                    for (int j = 0; j != xi.numLocations(); j++) {
-                        // double *w_i = &w[(xi->index-1)*nr_class];
-                        int w_offset = (xi.indexAtLocation(j)) * nr_class;
-                        for (m = 0; m < nz_d; m++) {
-                            w[w_offset + d_ind[m]] += d_val[m] * xi.valueAtLocation(j);
+                            k.add(w, alpha_index_i.get(m), xi, d, nr_class);
                         }
                     }
                 }
