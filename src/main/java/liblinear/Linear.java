@@ -502,6 +502,7 @@ public class Linear {
      */
     private static void solve_l2r_l1l2_svc(Problem prob, double[] w, double eps, double Cp, double Cn, SolverType solver_type) {
         int l = prob.l;
+        LinearKernel k = new LinearKernel();
         int i, s, iter = 0;
         double C, d, G;
         double[] QD = new double[l];
@@ -538,9 +539,11 @@ public class Linear {
             }
             QD[i] = diag[GETI(y, i)];
 
+            
             SparseVector x = prob.x.get(i);
-            for(int k = 0; k != x.numLocations(); k++)
-            	QD[i] += x.valueAtLocation(k) * x.valueAtLocation(k); 
+            QD[i] += k.snorm(x);
+            //for(int k = 0; k != x.numLocations(); k++)
+            //	QD[i] += x.valueAtLocation(k) * x.valueAtLocation(k); 
             index[i] = i;
         }
         long elapsed = System.nanoTime();
@@ -560,8 +563,9 @@ public class Linear {
                 SparseVector x = prob.x.get(i);
                 
                 
-                for(int j = 0; j != x.numLocations(); j++)
-                	G += w[x.indexAtLocation(j)] * x.valueAtLocation(j);
+                G = k.dot(w, x);
+                //for(int j = 0; j != x.numLocations(); j++)
+                //	G += w[x.indexAtLocation(j)] * x.valueAtLocation(j);
 
                 G = G * yi - 1;
 
@@ -599,9 +603,10 @@ public class Linear {
                     alpha[i] = Math.min(Math.max(alpha[i] - G / QD[i], 0.0), C);
                     d = (alpha[i] - alpha_old) * yi;
 
-                    for (int j = 0; j != x.numLocations(); j++) {
-                        w[x.indexAtLocation(j)] += d * x.valueAtLocation(j);
-                    }
+                    //for (int j = 0; j != x.numLocations(); j++) {
+                    //    w[x.indexAtLocation(j)] += d * x.valueAtLocation(j);
+                    //}
+                    k.add(w, x, d);	
                 }
             }
 
