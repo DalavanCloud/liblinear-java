@@ -34,7 +34,6 @@ class SolverMCSVM_CS {
     private final double   eps;
     private final double[] G;
     private final int      max_iter;
-    private final int      w_size; 
     private final int	   l;
     private final int      nr_class;
     private final Problem  prob;
@@ -50,7 +49,6 @@ class SolverMCSVM_CS {
 
 
     public SolverMCSVM_CS( Problem prob, int nr_class, double[] weighted_C, double eps, int max_iter ) {
-        this.w_size = prob.n;
         this.l = prob.l;
         this.nr_class = nr_class;
         this.eps = eps;
@@ -88,7 +86,7 @@ class SolverMCSVM_CS {
         // initial
         for (i = 0; i < l * nr_class; i++)
             alpha[i] = 0;
-        for (i = 0; i < w_size * nr_class; i++)
+        for (i = 0; i != w.length; i++)
             w[i] = 0;
         for (i = 0; i < l; i++) {
             for (m = 0; m < nr_class; m++)
@@ -214,8 +212,9 @@ class SolverMCSVM_CS {
         // calculate objective value
         double v = 0;
         int nSV = 0;
-        for (i = 0; i < w_size * nr_class; i++)
+        for (i = 0; i != w.length; i++)
             v += w[i] * w[i];
+        
         v = 0.5 * v;
         for (i = 0; i < l * nr_class; i++) {
             v += alpha[i];

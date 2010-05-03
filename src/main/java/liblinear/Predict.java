@@ -4,7 +4,6 @@ import static liblinear.Linear.atof;
 import static liblinear.Linear.atoi;
 import static liblinear.Linear.closeQuietly;
 import static liblinear.Linear.printf;
-
 import gnu.trove.TDoubleArrayList;
 import gnu.trove.TIntArrayList;
 
@@ -17,9 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Formatter;
-import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -41,12 +38,8 @@ public class Predict {
 
         int nr_class = model.getNrClass();
         double[] prob_estimates = null;
-        int n;
+
         int nr_feature = model.getNrFeature();
-        if (model.bias)
-            n = nr_feature + 1;
-        else
-            n = nr_feature;
 
         Formatter out = new Formatter(writer);
 

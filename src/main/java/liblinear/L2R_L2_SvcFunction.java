@@ -1,6 +1,5 @@
 package liblinear;
 
-import cc.mallet.types.SparseVector;
 
 class L2R_L2_SvcFunction implements Function {
 

@@ -1,6 +1,5 @@
 package liblinear;
 
-import java.util.Arrays;
 
 class L2R_LrFunction implements Function {
 
