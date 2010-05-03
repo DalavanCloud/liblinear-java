@@ -1,6 +1,6 @@
 package liblinear;
 
-import cc.mallet.types.SparseVector;
+import java.util.Arrays;
 
 class L2R_LrFunction implements Function {
 
@@ -8,6 +8,7 @@ class L2R_LrFunction implements Function {
     private final double[] z;
     private final double[] D;
     private final Problem  prob;
+    private LinearKernel k = new LinearKernel();
 
     public L2R_LrFunction( Problem prob, double Cp, double Cn ) {
         int i;
@@ -30,30 +31,18 @@ class L2R_LrFunction implements Function {
 
 
     private void Xv(double[] v, double[] Xv) {
-
-        for (int i = 0; i < prob.l; i++) {
-            Xv[i] = 0;
-            SparseVector x = prob.x.get(i);
-            for(int j = 0; j != x.numLocations(); j++)
-            	Xv[i] += v[x.indexAtLocation(j)] * x.valueAtLocation(j);            
-        }
+        for (int i = 0; i < prob.l; i++)
+        	Xv[i] = k.dot(v, prob.x.get(i));
     }
 
     private void XTv(double[] v, double[] XTv) {
         int l = prob.l;
-        int w_size = get_nr_variable();
-        //FeatureNode[][] x = prob.x;
 
-        for (int i = 0; i < w_size; i++)
+        for (int i = 0; i != XTv.length; i++)
             XTv[i] = 0;
-
         
         for (int i = 0; i < l; i++) {
-        	SparseVector xi = prob.x.get(i);
-        	for(int j = 0; j != xi.numLocations(); j++)
-        		XTv[xi.indexAtLocation(j)] += v[i] * xi.valueAtLocation(j);
-        	
-        	
+        	k.add(XTv, prob.x.get(i), v[i]);
         }
     }
 
@@ -63,7 +52,6 @@ class L2R_LrFunction implements Function {
         double f = 0;
         int[] y = prob.y;
         int l = prob.l;
-        int w_size = get_nr_variable();
 
         Xv(w, z);
         for (i = 0; i < l; i++) {
@@ -74,7 +62,7 @@ class L2R_LrFunction implements Function {
                 f += C[i] * (-yz + Math.log(1 + Math.exp(yz)));
         }
         f = 2.0 * f;
-        for (i = 0; i < w_size; i++)
+        for (i = 0; i < w.length; i++)
             f += w[i] * w[i];
         f /= 2.0;
 
@@ -85,7 +73,7 @@ class L2R_LrFunction implements Function {
         int i;
         int[] y = prob.y;
         int l = prob.l;
-        int w_size = get_nr_variable();
+        //int w_size = get_nr_variable();
 
         for (i = 0; i < l; i++) {
             z[i] = 1 / (1 + Math.exp(-y[i] * z[i]));
@@ -94,14 +82,13 @@ class L2R_LrFunction implements Function {
         }
         XTv(z, g);
 
-        for (i = 0; i < w_size; i++)
+        for (i = 0; i < w.length; i++)
             g[i] = w[i] + g[i];
     }
 
     public void Hv(double[] s, double[] Hs) {
         int i;
         int l = prob.l;
-        int w_size = get_nr_variable();
         double[] wa = new double[l];
 
         Xv(s, wa);
@@ -109,9 +96,8 @@ class L2R_LrFunction implements Function {
             wa[i] = C[i] * D[i] * wa[i];
 
         XTv(wa, Hs);
-        for (i = 0; i < w_size; i++)
+        for (i = 0; i != Hs.length; i++)
             Hs[i] = s[i] + Hs[i];
-        // delete[] wa;
     }
 
     public int get_nr_variable() {
