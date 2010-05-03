@@ -18,5 +18,20 @@ public class LinearKernel {
 		
 		return res;
 	}
-
+	
+	public double dot(double[] w, int index, SparseVector vec, int w_size){
+		double res = 0;
+        for (int j = 0; j != vec.numLocations(); j++) {
+            int w_offset = (vec.indexAtLocation(j)) * w_size;
+            res += w[w_offset + index] * vec.valueAtLocation(j);
+        }
+        return res;
+	}
+	
+	public void add(double[] w, int index, SparseVector vec, double factor, int w_size){
+		for (int j = 0; j != vec.numLocations(); j++) {
+			int w_offset = (vec.indexAtLocation(j)) * w_size;
+            w[w_offset + index] += factor * vec.valueAtLocation(j);
+		}
+	}
 }
