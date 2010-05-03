@@ -70,7 +70,7 @@ class SolverMCSVM_CS {
         return false;
     }
 
-    public void solve(double[] w) {
+    public double[] solve() {
         int i, m, s;
         int iter = 0;
         double[] alpha = new double[l * nr_class];
@@ -83,6 +83,7 @@ class SolverMCSVM_CS {
         int[] active_size_i = new int[l];
         double eps_shrink = Math.max(10.0 * eps, 1.0); // stopping tolerance for shrinking
         boolean start_from_all = true;
+        double[] w = new double[prob.n * nr_class];
         // initial
         for (i = 0; i < l * nr_class; i++)
             alpha[i] = 0;
@@ -224,7 +225,7 @@ class SolverMCSVM_CS {
             v -= alpha[i * nr_class + prob.y[i]];
         info("Objective value = %f\n", v);
         info("nSV = %d\n", nSV);
-
+        return w;
     }
 
     private void solve_sub_problem(double A_i, int yi, double C_yi, int active_i, double[] alpha_new) {

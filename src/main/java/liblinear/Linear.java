@@ -500,8 +500,9 @@ public class Linear {
      * solution will be put in w
      *</pre>
      */
-    private static void solve_l2r_l1l2_svc(Problem prob, double[] w, double eps, double Cp, double Cn, SolverType solver_type) {
+    private static double[] solve_l2r_l1l2_svc(Problem prob, double eps, double Cp, double Cn, SolverType solver_type) {
         int l = prob.l;
+        double[] w = new double[prob.n];
         LinearKernel k = new LinearKernel();
         int i, s, iter = 0;
         double C, d, G;
@@ -652,6 +653,7 @@ public class Linear {
         }
         info("Objective value = %f%n", v / 2);
         info("nSV = %d%n", nSV);
+        return w;
     }
 
     /**
@@ -668,8 +670,9 @@ public class Linear {
      * solution will be put in w
      *</pre>
      */
-    private static void solve_l1r_l2_svc(Problem prob_col, double[] w, double eps, double Cp, double Cn) {
+    private static double[] solve_l1r_l2_svc(Problem prob_col, double eps, double Cp, double Cn) {
         int l = prob_col.l;
+        double[] w = new double[prob_col.n];
         int w_size = prob_col.n - 1;
         int j, s, iter = 0;
         int max_iter = 1000;
@@ -885,6 +888,7 @@ public class Linear {
 
         info("Objective value = %f\n", v);
         info("#nonzeros/#features = %d/%d\n", nnz, w_size);
+        return w;
     }
 
     /**
@@ -901,8 +905,9 @@ public class Linear {
      * solution will be put in w
      *</pre>
      */
-    private static void solve_l1r_lr(Problem prob_col, double[] w, double eps, double Cp, double Cn) {
+    private static double[] solve_l1r_lr(Problem prob_col, double eps, double Cp, double Cn) {
         int l = prob_col.l;
+        double[] w = new double[prob_col.n];
         int w_size = prob_col.n - 1;
         int j, s, iter = 0;
         int max_iter = 1000;
@@ -1123,6 +1128,7 @@ public class Linear {
 
         info("Objective value = %f\n", v);
         info("#nonzeros/#features = %d/%d\n", nnz, w_size);
+        return w;
     }
 
     // transpose matrix X from row format to column format
@@ -1270,7 +1276,6 @@ public class Linear {
 
         // multi-class svm by Crammer and Singer
         if (param.solverType == SolverType.MCSVM_CS) {
-            model.w = new double[n * nr_class];
             for (i = 0; i < nr_class; i++) {
                 for (j = start[i]; j < start[i] + count[i]; j++) {
                     sub_prob.y[j] = i;
@@ -1278,7 +1283,7 @@ public class Linear {
             }
 
             SolverMCSVM_CS solver = new SolverMCSVM_CS(sub_prob, nr_class, weighted_C, param.eps);
-            solver.solve(model.w);
+            model.w = solver.solve();
         } else {
             if (nr_class == 2) {
                 model.w = new double[w_size];
@@ -1290,7 +1295,7 @@ public class Linear {
                 for (; k < sub_prob.l; k++)
                     sub_prob.y[k] = -1;
 
-                train_one(sub_prob, param, model.w, weighted_C[0], weighted_C[1]);
+                model.w = train_one(sub_prob, param, weighted_C[0], weighted_C[1]);
             } else {
                 model.w = new double[w_size * nr_class];
                 double[] w = new double[w_size];
@@ -1306,7 +1311,7 @@ public class Linear {
                     for (; k < sub_prob.l; k++)
                         sub_prob.y[k] = -1;
 
-                    train_one(sub_prob, param, w, weighted_C[i], param.C);
+                    w = train_one(sub_prob, param, weighted_C[i], param.C);
 
                     for (j = 0; j < n; j++)
                         model.w[j * nr_class + i] = w[j];
@@ -1317,7 +1322,7 @@ public class Linear {
         return model;
     }
 
-    private static void train_one(Problem prob, Parameter param, double[] w, double Cp, double Cn) {
+    private static double[] train_one(Problem prob, Parameter param, double Cp, double Cn) {
         double eps = param.eps;
         int pos = 0;
         for (int i = 0; i < prob.l; i++)
@@ -1329,30 +1334,24 @@ public class Linear {
             case L2R_LR: {
                 fun_obj = new L2R_LrFunction(prob, Cp, Cn);
                 Tron tron_obj = new Tron(fun_obj, eps * Math.min(pos, neg) / prob.l);
-                tron_obj.tron(w);
-                break;
+                return tron_obj.tron();
             }
             case L2R_L2LOSS_SVC: {
                 fun_obj = new L2R_L2_SvcFunction(prob, Cp, Cn);
                 Tron tron_obj = new Tron(fun_obj, eps * Math.min(pos, neg) / prob.l);
-                tron_obj.tron(w);
-                break;
+                return tron_obj.tron();
             }
             case L2R_L2LOSS_SVC_DUAL:
-                solve_l2r_l1l2_svc(prob, w, eps, Cp, Cn, SolverType.L2R_L2LOSS_SVC_DUAL);
-                break;
+                return solve_l2r_l1l2_svc(prob, eps, Cp, Cn, SolverType.L2R_L2LOSS_SVC_DUAL);
             case L2R_L1LOSS_SVC_DUAL:
-                solve_l2r_l1l2_svc(prob, w, eps, Cp, Cn, SolverType.L2R_L1LOSS_SVC_DUAL);
-                break;
+                return solve_l2r_l1l2_svc(prob, eps, Cp, Cn, SolverType.L2R_L1LOSS_SVC_DUAL);
             case L1R_L2LOSS_SVC: {
                 Problem prob_col = transpose(prob);
-                solve_l1r_l2_svc(prob_col, w, eps * Math.min(pos, neg) / prob.l, Cp, Cn);
-                break;
+                return solve_l1r_l2_svc(prob_col, eps * Math.min(pos, neg) / prob.l, Cp, Cn);
             }
             case L1R_LR: {
                 Problem prob_col = transpose(prob);
-                solve_l1r_lr(prob_col, w, eps * Math.min(pos, neg) / prob.l, Cp, Cn);
-                break;
+                return solve_l1r_lr(prob_col, eps * Math.min(pos, neg) / prob.l, Cp, Cn);
             }
             default:
                 throw new IllegalStateException("unknown solver type: " + param.solverType);

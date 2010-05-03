@@ -8,5 +8,6 @@ interface Function {
     void grad(double[] w, double[] g);
 
     void Hv(double[] s, double[] Hs);
+    Problem problem();
 
 }

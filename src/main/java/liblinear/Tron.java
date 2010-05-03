@@ -14,6 +14,7 @@ class Tron {
     private final double   eps;
 
     private final int      max_iter;
+    private double[] w;
 
     public Tron( final Function fun_obj ) {
         this(fun_obj, 0.1);
@@ -27,10 +28,11 @@ class Tron {
         this.fun_obj = fun_obj;
         this.eps = eps;
         this.max_iter = max_iter;
+        this.w = new double[fun_obj.problem().n];
     }
 
     // void tron(double *w)
-    void tron(double[] w) {
+    double[] tron() {
         // Parameters for updating the iterates.
         double eta0 = 1e-4, eta1 = 0.25, eta2 = 0.75;
 
@@ -124,6 +126,7 @@ class Tron {
                 break;
             }
         }
+        return w;
     }
 
     // int TRON::trcg(double delta, double *g, double *s, double *r)

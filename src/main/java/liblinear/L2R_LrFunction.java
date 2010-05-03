@@ -98,4 +98,9 @@ class L2R_LrFunction implements Function {
         for (i = 0; i != Hs.length; i++)
             Hs[i] = s[i] + Hs[i];
     }
+    
+    @Override
+    public Problem problem(){
+    	return prob;
+    }
 }

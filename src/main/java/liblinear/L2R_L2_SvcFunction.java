@@ -107,4 +107,9 @@ class L2R_L2_SvcFunction implements Function {
             Xv[i] = k.dot(v, prob.x.get(i));
         }
     }
+    
+    @Override
+    public Problem problem(){
+    	return prob;
+    }
 }
