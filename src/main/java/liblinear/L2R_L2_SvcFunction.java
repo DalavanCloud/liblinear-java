@@ -10,6 +10,7 @@ class L2R_L2_SvcFunction implements Function {
     private final double[] z;
 
     private int            sizeI;
+    private LinearKernel k = new LinearKernel();
 
     public L2R_L2_SvcFunction( Problem prob, double Cp, double Cn ) {
         int i;
@@ -90,36 +91,21 @@ class L2R_L2_SvcFunction implements Function {
             XTv[i] = 0;
 
         for (i = 0; i < sizeI; i++) {
-        	SparseVector xi = prob.x.get(I[i]);
-        	for(int j = 0; j != xi.numLocations(); j++)
-        		XTv[xi.indexAtLocation(j)] += v[i] * xi.valueAtLocation(j);
+        	k.add(XTv, prob.x.get(I[i]), v[i]);
         }
     }
 
     private void subXv(double[] v, double[] Xv) {
 
         for (int i = 0; i < sizeI; i++) {
-            Xv[i] = 0;
-        	SparseVector xi = prob.x.get(I[i]);
-        	for(int j = 0; j != xi.numLocations(); j++)
-        		Xv[i] += v[xi.indexAtLocation(j)] * xi.valueAtLocation(j);
+            Xv[i] = k.dot(v, prob.x.get(I[i]));
         }
     }
 
     private void Xv(double[] v, double[] Xv) {
 
         for (int i = 0; i < prob.l; i++) {
-            Xv[i] = 0;
-        	SparseVector xi = prob.x.get(i);
-        	for(int j = 0; j != xi.numLocations(); j++)
-        		Xv[i] += v[xi.indexAtLocation(j)] * xi.valueAtLocation(j);
-
+            Xv[i] = k.dot(v, prob.x.get(i));
         }
     }
-
-	@Override
-	public int get_nr_variable() {
-		return prob.n;
-	}
-
 }

@@ -9,5 +9,4 @@ interface Function {
 
     void Hv(double[] s, double[] Hs);
 
-    int get_nr_variable();
 }
