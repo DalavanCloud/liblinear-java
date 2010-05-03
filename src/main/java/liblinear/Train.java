@@ -204,7 +204,8 @@ public class Train {
         try {
             while (true) {
                 String line = fp.readLine();
-                if (line == null) break;
+                if (line == null) 
+                	break;
                 lineNr++;
                 int commentPos = line.indexOf('#');
                 
@@ -217,6 +218,11 @@ public class Train {
                 	continue;
                 
                 String token = st.nextToken();
+                
+                if(lineNr % 10000 == 0){
+                	System.out.printf("%d..", lineNr);
+                	System.out.flush();
+                }
 
                 try {
                     vy.add(atoi(token));
@@ -261,7 +267,7 @@ public class Train {
 
                 vx.add(new SparseVector(indexes.toNativeArray(), values.toNativeArray(), false, false));
             }
-
+            System.out.printf("%d. Done!%n", lineNr);
             return constructProblem(vy, vx, max_index, bias);
         }
         finally {
