@@ -157,13 +157,15 @@ public class Train {
                     {
                         int[] old = param.weightLabel;
                         param.weightLabel = new int[nr_weight];
-                        System.arraycopy(old, 0, param.weightLabel, 0, nr_weight - 1);
+                        if(old != null)
+                        	System.arraycopy(old, 0, param.weightLabel, 0, nr_weight - 1);
                     }
 
                     {
                         double[] old = param.weight;
                         param.weight = new double[nr_weight];
-                        System.arraycopy(old, 0, param.weight, 0, nr_weight - 1);
+                        if(old != null)
+                        	System.arraycopy(old, 0, param.weight, 0, nr_weight - 1);
                     }
 
                     param.weightLabel[nr_weight - 1] = atoi(argv[i - 1].substring(2));
