@@ -41,13 +41,44 @@ public class Train {
         int[] target = Linear.crossValidation(prob, param, nr_fold);
         stop = System.currentTimeMillis();
         System.out.println("time: " + (stop - start) + " ms");
+        int tp = 0;
+        int tn = 0; 
+        int fp = 0; 
+        int fn = 0;
+        int pos = 0;
+        int neg = 0;
 
         int total_correct = 0;
         for (int i = 0; i < prob.l; i++)
             if (target[i] == prob.y[i]) ++total_correct;
+        
+        for (int i = 0; i < prob.l; i++){
+        	if(prob.y[i] == 1)
+        		pos++;
+        	else
+        		neg++;
+        	
+        	if(target[i] == prob.y[i]){
+        		if(target[i] == 1)
+        			tp++;
+        		else
+        			tn++;
+        	}else{
+        		if(prob.y[i] == 1)
+        			fp++;
+        		else
+        			fn++;
+        	}
+        	
+        	
+        		
+        }
 
-        System.out.printf("correct: %d%n", total_correct);
+        System.out.printf("correct: %d/%d%n", total_correct, prob.y.length);
         System.out.printf("Cross Validation Accuracy = %g%%%n", 100.0 * total_correct / prob.l);
+        System.out.printf("Total positive/negative:%d/%d%n", pos, neg);
+        System.out.printf("True positive/negative: %d/%d%n", tp, tn);
+        System.out.printf("False positive/negative: %d/%d%n", fp, fn);
     }
 
     private void exit_with_help() {
